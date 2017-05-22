@@ -11,13 +11,23 @@ import xml.etree.ElementTree
 
 
 class Parser:
-    def __init__(self, path, selected_columns, selected_meta):
+    def __init__(self, path, selected_region_data, selected_meta, selected_values):
         self.path = path
         self.data = None
         self.meta_data = None
         self.schema = self._get_file("schema")
-        self.read_all_meta_data(self.path)
+        self.read_all_meta_data(self.path, selected_meta)
+        selected_columns = selected_region_data + selected_values
         self.read_all(self.path, selected_columns)
+
+        self.to_matrix(selected_values, selected_region_data)
+
+        meta_index = []
+        for x in selected_meta:
+            meta_index.append(self.meta_data[x].values)
+        meta_index = np.asarray(meta_index)
+        multi_meta_index = pd.MultiIndex.from_arrays(meta_index, names=selected_meta)
+        self.data.index = multi_meta_index
 
 
         return
@@ -55,7 +65,7 @@ class Parser:
         file_name = sp[-1]
         return file_name.split('.')[0]
 
-    def read_meta_data(self, fname):
+    def read_meta_data(self, fname, selected_meta_data):
         # reads a meta data file into a dictionary
 
         columns = []
@@ -68,15 +78,16 @@ class Parser:
         df = pd.DataFrame(data=data, index=columns)
         df = df.T
         sample = self._get_sample_name(fname)
+        df = df[selected_meta_data]
         df['sample'] = sample
         return df
 
-    def read_all_meta_data(self, path):
+    def read_all_meta_data(self, path, selected_meta_data):
         # reads all meta data files
         files = self._get_files("meta", path)
         df = pd.DataFrame()
         for f in files:
-            data = self.read_meta_data(f)
+            data = self.read_meta_data(f, selected_meta_data)
             if data is not None:
                 df = pd.concat([data, df], axis=0)
         self.meta_data = df
@@ -106,7 +117,7 @@ class Parser:
                 df = pd.concat([data, df], axis=0)
         self.data = df
 
-    def to_matrix(self, value, multi_index, selected_meta):
+    def to_matrix(self, value, multi_index):
         # creates a matrix dataframe
         if isinstance(value, list):
             for v in value:
@@ -121,15 +132,11 @@ class Parser:
         # to remove the zero regions
         self.data = self.data.loc[(self.data != 0).any(1)]
 
-
-p = Parser("../sample_data",['chr','left','right','strand','gene_id','transcript_id','count_GENES_PATIENTS'],[])
-
-p.to_matrix(['count_GENES_PATIENTS'],['chr','right','strand','gene_id','transcript_id'], [])
+# Usage example
+selected_values = ['count_GENES_PATIENTS']
+selected_region_data = ['chr','left','right','strand','gene_id','transcript_id']
 selected_meta_data = ['PATIENTS.manually_curated|sequence_source','PATIENTS.manually_curated|tissue_status','PATIENTS.manually_curated|tumor_description','GENES.description']
-meta_index = []
-for x in selected_meta_data:
-    meta_index.append(p.meta_data[x].values)
-meta_index = np.asarray(meta_index)
-multi_meta_index = pd.MultiIndex.from_arrays(meta_index, names = selected_meta_data)
-p.data.index = multi_meta_index
-print(p.data.head())
+p = Parser("../mini_data",selected_region_data, selected_meta_data, selected_values)
+
+
+
