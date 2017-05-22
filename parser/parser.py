@@ -17,9 +17,9 @@ class Parser:
         self.meta_data = None
         self.schema = self._get_file("schema")
         self.read_all_meta_data(self.path, selected_meta)
-        selected_columns = selected_region_data + selected_values
-        self.read_all(self.path, selected_columns)
-
+        selected_region_data.append(selected_values)
+        self.read_all(self.path, selected_region_data, selected_values)
+        selected_region_data.remove(selected_values)
         self.to_matrix(selected_values, selected_region_data)
 
         meta_index = []
@@ -28,6 +28,7 @@ class Parser:
         meta_index = np.asarray(meta_index)
         multi_meta_index = pd.MultiIndex.from_arrays(meta_index, names=selected_meta)
         self.data.index = multi_meta_index
+        self.meta_data = None
 
 
         return
@@ -92,13 +93,15 @@ class Parser:
                 df = pd.concat([data, df], axis=0)
         self.meta_data = df
 
-    def read_one(self, path, cols, selected_cols):
+    def read_one(self, path, cols, selected_region_data, selected_values):
         # reads a sample file
         df = pd.read_table(path, engine='c', sep="\t", lineterminator="\n")
         df.columns = cols  # column names from schema
-        df = df[selected_cols]
+        df = df[selected_region_data]
+        df = df.loc[df[selected_values] != 0]
         sample = self._get_sample_name(path)
         df['sample'] = sample
+        print(sample)
         return df
 
     def select_columns(self, desired_cols):
@@ -106,13 +109,14 @@ class Parser:
 
 
 
-    def read_all(self, path, selected_columns):
+    def read_all(self, path, selected_region_data, selected_values):
         # reads all sample files
         files = self._get_files("gdm", path)
-        df = pd.DataFrame()
+        df = pd.DataFrame(dtype=float)
+
         cols = self.parse_schema(self.schema)
         for f in files:
-            data = self.read_one(f, cols, selected_columns)
+            data = self.read_one(f, cols, selected_region_data, selected_values)
             if data is not None:
                 df = pd.concat([data, df], axis=0)
         self.data = df
@@ -124,19 +128,8 @@ class Parser:
                 self.data[v] = self.data[v].map(float)
         else:
             self.data[value] = self.data[value].map(float) # issue: does not map for multiple values
+        print("started pivoting")
         self.data = pd.pivot_table(self.data,
                                 values=value, columns=multi_index, index=['sample'],
                                 fill_value=0)
-
-    def remove_zero_regions(self):
-        # to remove the zero regions
-        self.data = self.data.loc[(self.data != 0).any(1)]
-
-# Usage example
-selected_values = ['count_GENES_PATIENTS']
-selected_region_data = ['chr','left','right','strand','gene_id','transcript_id']
-selected_meta_data = ['PATIENTS.manually_curated|sequence_source','PATIENTS.manually_curated|tissue_status','PATIENTS.manually_curated|tumor_description','GENES.description']
-p = Parser("../mini_data",selected_region_data, selected_meta_data, selected_values)
-
-
-
+        print("end of pivoting")
