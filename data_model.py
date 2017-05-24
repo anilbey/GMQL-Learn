@@ -6,27 +6,28 @@
 
 import pandas as pd
 from parser.parser import Parser
+import numpy as np
 
-# Usage example
 
 class DataModel:
     def __init__(self):
         self.data = None
+        self.meta = None
         return
 
-    def load(self, path, selected_regs, selected_meta, selected_vals):
-        p = Parser(path, selected_regs, selected_meta, selected_vals)
+    def load(self, path, regs=[], meta=[], values=[]):
+        p = Parser(path, regs, meta, values)
         self.data = p.data
+        self.meta = p.meta
 
+    def combine_meta(self, selected_meta):
+        meta_names = list(selected_meta)
+        meta_names.append('sample')
+        meta_index = []
+        selected_meta.append('sample')
+        for x in meta_names:
+            meta_index.append(self.meta[x].values)
+        meta_index = np.asarray(meta_index)
+        multi_meta_index = pd.MultiIndex.from_arrays(meta_index, names=selected_meta)
+        self.data.index = multi_meta_index
 
-
-# Usage example
-# selected_values = 'count_GENES_PATIENTS'
-# selected_region_data = ['chr','left','right','strand','gene_id','transcript_id']
-# selected_meta_data = ['PATIENTS.manually_curated|sequence_source','PATIENTS.manually_curated|tissue_status','PATIENTS.manually_curated|tumor_description','GENES.description']
-# d = DataModel()
-# d.load("./whole_data",selected_region_data, selected_meta_data, selected_values)
-#
-#
-#
-#

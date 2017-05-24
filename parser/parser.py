@@ -12,26 +12,24 @@ import xml.etree.ElementTree
 
 class Parser:
     def __init__(self, path, selected_region_data, selected_meta, selected_values):
+        # complete constructor
+        # reads
         self.path = path
         self.data = None
-        self.meta_data = None
+        self.meta = None
         self.schema = self._get_file("schema")
-        self.read_all_meta_data(self.path, selected_meta)
-        selected_region_data.append(selected_values)
-        self.read_all(self.path, selected_region_data, selected_values)
-        selected_region_data.remove(selected_values)
+
+        # copy the list since it is to be modified
+        regions = list(selected_region_data)
+        self.parse_meta(self.path, selected_meta)
+        if (type(selected_values) is list):
+            regions.extend(selected_values)
+        else:
+            regions.append(selected_values)
+        self.parse_data(self.path, regions, selected_values)
         self.to_matrix(selected_values, selected_region_data)
-
-        meta_index = []
-        for x in selected_meta:
-            meta_index.append(self.meta_data[x].values)
-        meta_index = np.asarray(meta_index)
-        multi_meta_index = pd.MultiIndex.from_arrays(meta_index, names=selected_meta)
-        self.data.index = multi_meta_index
-        self.meta_data = None
-
-
         return
+
 
     def get_sample_id(self, path):
         sp = path.split('/')
@@ -66,9 +64,8 @@ class Parser:
         file_name = sp[-1]
         return file_name.split('.')[0]
 
-    def read_meta_data(self, fname, selected_meta_data):
-        # reads a meta data file into a dictionary
-
+    def parse_single_meta(self, fname, selected_meta_data):
+        # reads a meta data file into a dataframe
         columns = []
         data = []
         with open(fname) as f:
@@ -79,44 +76,48 @@ class Parser:
         df = pd.DataFrame(data=data, index=columns)
         df = df.T
         sample = self._get_sample_name(fname)
-        df = df[selected_meta_data]
+        if selected_meta_data is not None:
+            df = df[selected_meta_data]
         df['sample'] = sample
         return df
 
-    def read_all_meta_data(self, path, selected_meta_data):
+    def parse_meta(self, path, selected_meta_data):
         # reads all meta data files
         files = self._get_files("meta", path)
         df = pd.DataFrame()
         for f in files:
-            data = self.read_meta_data(f, selected_meta_data)
+            data = self.parse_single_meta(f, selected_meta_data)
             if data is not None:
-                df = pd.concat([data, df], axis=0)
-        self.meta_data = df
+                df = pd.concat([df, data], axis=0)
+        df.index = df['sample']
+        self.meta = df
 
-    def read_one(self, path, cols, selected_region_data, selected_values):
+    def parse_single_data(self, path, cols, selected_region_data, selected_values):
         # reads a sample file
         df = pd.read_table(path, engine='c', sep="\t", lineterminator="\n")
         df.columns = cols  # column names from schema
         df = df[selected_region_data]
-        df = df.loc[df[selected_values] != 0]
+        if (type(selected_values) is list):
+            df_2 = pd.DataFrame(dtype=float)
+            for value in selected_values:
+                df_3 = df.loc[df[value] != 0]
+                df_2 = pd.concat([df_2,df_3], axis=0)
+            df = df_2
+        else:
+            df = df.loc[df[selected_values] != 0]
         sample = self._get_sample_name(path)
         df['sample'] = sample
-        print(sample)
+        print(sample,end=' ')
         return df
 
-    def select_columns(self, desired_cols):
-        self.data = self.data[desired_cols]
-
-
-
-    def read_all(self, path, selected_region_data, selected_values):
+    def parse_data(self, path, selected_region_data, selected_values):
         # reads all sample files
         files = self._get_files("gdm", path)
         df = pd.DataFrame(dtype=float)
 
         cols = self.parse_schema(self.schema)
         for f in files:
-            data = self.read_one(f, cols, selected_region_data, selected_values)
+            data = self.parse_single_data(f, cols, selected_region_data, selected_values)
             if data is not None:
                 df = pd.concat([data, df], axis=0)
         self.data = df
