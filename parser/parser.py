@@ -76,7 +76,7 @@ class Parser:
         df = pd.DataFrame(data=data, index=columns)
         df = df.T
         sample = self._get_sample_name(fname)
-        if selected_meta_data is not None:
+        if selected_meta_data:
             df = df[selected_meta_data]
         df['sample'] = sample
         return df
