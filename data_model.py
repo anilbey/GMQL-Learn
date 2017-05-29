@@ -9,25 +9,31 @@ class DataModel:
         self.meta = None
         return
 
-    def load(self, _path, regs=['chr', 'left', 'right', 'strand'], meta=[], values=[]):
+    @classmethod
+    def from_gdataframe(cls, data, meta):
+        obj = cls()
+        obj.data = data
+        obj.meta = meta
+        return obj
+
+
+
+    def load(self, _path, regs=['chr', 'left', 'right', 'strand'], meta=[], values=[], full_load=False):
         """Parses and loads the data into instance attributes.
 
         Args:
-            _path: The path to the dataset on the filesystem.
+            :param path: The path to the dataset on the filesystem.
             regs: the regions that are to be analyzed.
             meta: the meta-data that are to be analyzed.
             values: the values that are to be selected.
+            full_load: if true then the all-zero rows are also read
 
         """
         p = Parser(_path)
         self.meta = p.parse_meta(meta)
-        self.data = p.parse_data(regs, values)
+        self.data = p.parse_data(regs, values, full_load=full_load)
 
-    @classmethod
-    def from_multi_reference(cls):
-        pass
-
-    def combine_meta(self, selected_meta):
+    def set_meta(self, selected_meta):
         """Sets one axis of the 2D multi-indexed dataframe
             index to the selected meta data.
 
@@ -38,20 +44,22 @@ class DataModel:
         meta_names = list(selected_meta)
         meta_names.append('sample')
         meta_index = []
-        selected_meta.append('sample')
         for x in meta_names:
             meta_index.append(self.meta[x].values)
         meta_index = np.asarray(meta_index)
-        multi_meta_index = pd.MultiIndex.from_arrays(meta_index, names=selected_meta)
+        multi_meta_index = pd.MultiIndex.from_arrays(meta_index, names=meta_names)
         self.data.index = multi_meta_index
+        # TODO set the index for existing samples in the region dataframe.
+        # The index size of the region dataframe does not necessarily be equal to that of metadata df.
 
-    def to_matrix(self, values, multi_index):
+    def to_matrix(self, values, multi_index, default_value=0):
         """Creates a 2D multi-indexed matrix representation of the data.
             This representation allows the data to be sent to the machine learning algorithms.
 
         Args:
             values: The value or values that are going to fill the matrix.
             multi_index: The index to one axis of the matrix.
+            default_value: The default fill value of the matrix
 
         """
         if isinstance(values, list):
@@ -62,6 +70,6 @@ class DataModel:
         print("started pivoting")
         self.data = pd.pivot_table(self.data,
                                    values=values, columns=multi_index, index=['sample'],
-                                   fill_value=0)
+                                   fill_value=default_value)
         print("end of pivoting")
 
