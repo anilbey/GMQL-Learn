@@ -4,13 +4,17 @@ import numpy as np
 
 
 class DataModel:
+    """
+    The Data Model for the manipulation of GDM data
+    """
+
     def __init__(self):
         self.data = None
         self.meta = None
         return
 
     @classmethod
-    def from_gdataframe(cls, data, meta):
+    def from_memory(cls, data, meta):
         obj = cls()
         obj.data = data
         obj.meta = meta
@@ -45,20 +49,20 @@ class DataModel:
         meta_names.append('sample')
         meta_index = []
         for x in meta_names:
-            meta_index.append(self.meta[x].values)
+            meta_index.append(self.meta.ix[self.data.index][x].values)
         meta_index = np.asarray(meta_index)
         multi_meta_index = pd.MultiIndex.from_arrays(meta_index, names=meta_names)
         self.data.index = multi_meta_index
         # TODO set the index for existing samples in the region dataframe.
         # The index size of the region dataframe does not necessarily be equal to that of metadata df.
 
-    def to_matrix(self, values, multi_index, default_value=0):
+    def to_matrix(self, values, selected_regions, default_value=0):
         """Creates a 2D multi-indexed matrix representation of the data.
             This representation allows the data to be sent to the machine learning algorithms.
 
         Args:
             values: The value or values that are going to fill the matrix.
-            multi_index: The index to one axis of the matrix.
+            selected_regions: The index to one axis of the matrix.
             default_value: The default fill value of the matrix
 
         """
@@ -69,7 +73,7 @@ class DataModel:
             self.data[values] = self.data[values].map(float)
         print("started pivoting")
         self.data = pd.pivot_table(self.data,
-                                   values=values, columns=multi_index, index=['sample'],
+                                   values=values, columns=selected_regions, index=['sample'],
                                    fill_value=default_value)
         print("end of pivoting")
 

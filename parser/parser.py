@@ -61,7 +61,7 @@ class Parser:
             for line in f:
                 splitted = line.split('\t')
                 columns.append(splitted[0])
-                data.append(splitted[1])
+                data.append(splitted[1].split('\n')[0])  # to remove the \n values
         df = pd.DataFrame(data=data, index=columns)
         df = df.T
         sample = self._get_sample_name(fname)
@@ -81,25 +81,27 @@ class Parser:
         df.index = df['sample']
         return df
 
-    def parse_single_data(self, path, cols, selected_region_data, selected_values):
+    def parse_single_data(self, path, cols, selected_region_data, selected_values, full_load):
         # reads a sample file
         df = pd.read_table(path, engine='c', sep="\t", lineterminator="\n")
         df.columns = cols  # column names from schema
         df = df[selected_region_data]
-        if type(selected_values) is list:
-            df_2 = pd.DataFrame(dtype=float)
-            for value in selected_values:
-                df_3 = df.loc[df[value] != 0]
-                df_2 = pd.concat([df_2, df_3], axis=0)
-            df = df_2
-        else:
-            df = df.loc[df[selected_values] != 0]
+
+        if not full_load:
+            if type(selected_values) is list:
+                df_2 = pd.DataFrame(dtype=float)
+                for value in selected_values:
+                    df_3 = df.loc[df[value] != 0]
+                    df_2 = pd.concat([df_2, df_3], axis=0)
+                df = df_2
+            else:
+                df = df.loc[df[selected_values] != 0]
+
         sample = self._get_sample_name(path)
         df['sample'] = sample
-        print(sample, end=' ')
         return df
 
-    def parse_data(self, selected_region_data, selected_values):
+    def parse_data(self, selected_region_data, selected_values, full_load=False):
         # reads all sample files
         regions = list(selected_region_data)
         if type(selected_values) is list:
@@ -112,8 +114,7 @@ class Parser:
 
         cols = self.parse_schema(self.schema)
         for f in files:
-            data = self.parse_single_data(f, cols, regions, selected_values)
-            if data is not None:
-                df = pd.concat([data, df], axis=0)
+            data = self.parse_single_data(f, cols, regions, selected_values, full_load)
+            df = pd.concat([data, df], axis=0)
         return df
 
