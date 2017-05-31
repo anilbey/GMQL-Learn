@@ -20,8 +20,6 @@ class DataModel:
         obj.meta = meta
         return obj
 
-
-
     def load(self, _path, regs=['chr', 'left', 'right', 'strand'], meta=[], values=[], full_load=False):
         """Parses and loads the data into instance attributes.
 
