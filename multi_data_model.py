@@ -56,7 +56,7 @@ class MultiDataModel:
     def merge(self, samples_uuid):
         """
         The method to merge the datamodels belonging to different references
-        :param samples_uuid: The unique identifier metadata column name to separate the data by the number of samples
+        :param samples_uuid: The unique identifier metadata column name to identify the identical samples having different references
         :return: Returns the merged dataframe
         """
 
