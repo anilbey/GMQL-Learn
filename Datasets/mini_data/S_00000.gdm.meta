@@ -1,0 +1,145 @@
+GENES.annotation_type	gene
+GENES.assembly	hg19
+GENES.contact	gencode@sanger.ac.uk
+GENES.date	2013-12-05
+GENES.description	evidence-based annotation of the human genome (GRCh37), version 19 (Ensembl 74)
+GENES.format	gtf
+GENES.name	GENCODE V19 annotations
+GENES.provider	GENCODE
+PATIENTS.biospecimen_aliquot|bcr_aliquot_barcode	tcga-24-1847-01a-01w-0633-09
+PATIENTS.biospecimen_aliquot|bcr_aliquot_uuid	57a6aa0e-360f-4715-aa71-64ac651cdd40
+PATIENTS.biospecimen_aliquot|bcr_patient_uuid	21966708-4e66-4211-add0-f1515b09e362
+PATIENTS.biospecimen_aliquot|bcr_sample_barcode	tcga-24-1847-01a
+PATIENTS.biospecimen_aliquot|center_id	09
+PATIENTS.biospecimen_aliquot|concentration	0.50
+PATIENTS.biospecimen_aliquot|date_of_shipment	2009-09-16
+PATIENTS.biospecimen_aliquot|is_derived_from_ffpe	no
+PATIENTS.biospecimen_aliquot|plate_column	7
+PATIENTS.biospecimen_aliquot|plate_id	0633
+PATIENTS.biospecimen_aliquot|plate_row	f
+PATIENTS.biospecimen_aliquot|quantity	200.00
+PATIENTS.biospecimen_aliquot|source_center	22
+PATIENTS.biospecimen_aliquot|volume	400.00
+PATIENTS.biospecimen_analyte|analyte_type	repli-g (qiagen) dna
+PATIENTS.biospecimen_analyte|analyte_type_id	w
+PATIENTS.biospecimen_analyte|bcr_analyte_barcode	tcga-24-1847-01a-01w
+PATIENTS.biospecimen_analyte|bcr_analyte_uuid	9be2fabd-9489-4aea-b640-a41cfc64c47d
+PATIENTS.biospecimen_analyte|bcr_patient_uuid	21966708-4e66-4211-add0-f1515b09e362
+PATIENTS.biospecimen_analyte|bcr_sample_barcode	tcga-24-1847-01a
+PATIENTS.biospecimen_analyte|concentration	0.50
+PATIENTS.biospecimen_analyte|gel_image_file	https://sharedoc.nchri.org/tcga-bcr/default.aspx
+PATIENTS.biospecimen_analyte|is_derived_from_ffpe	no
+PATIENTS.biospecimen_analyte|normal_tumor_genotype_match	yes
+PATIENTS.biospecimen_analyte|pcr_amplification_successful	no
+PATIENTS.biospecimen_analyte|spectrophotometer_method	uv spec
+PATIENTS.biospecimen_normal_control|bcr_patient_barcode	tcga-24-1847
+PATIENTS.biospecimen_normal_control|bcr_patient_uuid	21966708-4e66-4211-add0-f1515b09e362
+PATIENTS.biospecimen_portion|bcr_patient_uuid	21966708-4e66-4211-add0-f1515b09e362
+PATIENTS.biospecimen_portion|bcr_portion_barcode	tcga-24-1847-01a-01
+PATIENTS.biospecimen_portion|bcr_portion_uuid	85a36ad5-734f-43c6-9e55-9e34b851593b
+PATIENTS.biospecimen_portion|bcr_sample_barcode	tcga-24-1847-01a
+PATIENTS.biospecimen_portion|date_of_creation	2009-06-22
+PATIENTS.biospecimen_portion|is_ffpe	no
+PATIENTS.biospecimen_portion|portion_number	01
+PATIENTS.biospecimen_portion|weight	108.00
+PATIENTS.biospecimen_protocol|bcr_analyte_barcode	tcga-24-1847-01a-01w
+PATIENTS.biospecimen_protocol|bcr_patient_uuid	21966708-4e66-4211-add0-f1515b09e362
+PATIENTS.biospecimen_protocol|bcr_sample_barcode	tcga-24-1847-01a
+PATIENTS.biospecimen_protocol|experimental_protocol_type	repli-g
+PATIENTS.biospecimen_sample|bcr_patient_uuid	21966708-4e66-4211-add0-f1515b09e362
+PATIENTS.biospecimen_sample|bcr_sample_barcode	tcga-24-1847-01a
+PATIENTS.biospecimen_sample|bcr_sample_uuid	f1989bf4-c884-430d-a075-679f7b4a4b07
+PATIENTS.biospecimen_sample|intermediate_dimension	0.9
+PATIENTS.biospecimen_sample|is_ffpe	no
+PATIENTS.biospecimen_sample|longest_dimension	1
+PATIENTS.biospecimen_sample|pathology_report_file_name	tcga-24-1847.20d96d45-40d3-44ad-a9e8-fdc7e545ed5d.pdf
+PATIENTS.biospecimen_sample|pathology_report_uuid	20d96d45-40d3-44ad-a9e8-fdc7e545ed5d
+PATIENTS.biospecimen_sample|sample_type	primary tumor
+PATIENTS.biospecimen_sample|sample_type_id	01
+PATIENTS.biospecimen_sample|shortest_dimension	0.3
+PATIENTS.biospecimen_sample|vial_number	a
+PATIENTS.biospecimen_slide|bcr_patient_uuid	21966708-4e66-4211-add0-f1515b09e362
+PATIENTS.biospecimen_slide|bcr_sample_barcode	tcga-24-1847-01a
+PATIENTS.biospecimen_slide|bcr_slide_barcode	tcga-24-1847-01a-01-ts1
+PATIENTS.biospecimen_slide|bcr_slide_uuid	feb1ba92-5e6b-473e-a1e3-b8660512a989
+PATIENTS.biospecimen_slide|image_file_name	tcga-24-1847-01a-01-ts1.feb1ba92-5e6b-473e-a1e3-b8660512a989.svs
+PATIENTS.biospecimen_slide|is_derived_from_ffpe	no
+PATIENTS.biospecimen_slide|percent_lymphocyte_infiltration	0
+PATIENTS.biospecimen_slide|percent_monocyte_infiltration	0
+PATIENTS.biospecimen_slide|percent_necrosis	0
+PATIENTS.biospecimen_slide|percent_neutrophil_infiltration	0
+PATIENTS.biospecimen_slide|percent_normal_cells	0
+PATIENTS.biospecimen_slide|percent_stromal_cells	10
+PATIENTS.biospecimen_slide|percent_tumor_cells	90
+PATIENTS.biospecimen_slide|percent_tumor_nuclei	90
+PATIENTS.biospecimen_slide|section_location	top
+PATIENTS.biospecimen_tumor_sample|bcr_patient_barcode	tcga-24-1847
+PATIENTS.biospecimen_tumor_sample|bcr_patient_uuid	21966708-4e66-4211-add0-f1515b09e362
+PATIENTS.clinical_drug|bcr_drug_barcode	tcga-24-1847-d26351
+PATIENTS.clinical_drug|bcr_drug_uuid	1b6a9f6f-1592-436b-800f-4e4d1a19ba98
+PATIENTS.clinical_drug|bcr_patient_barcode	tcga-24-1847
+PATIENTS.clinical_drug|bcr_patient_uuid	21966708-4e66-4211-add0-f1515b09e362
+PATIENTS.clinical_drug|form_completion_date	2009-7-24
+PATIENTS.clinical_drug|pharma_adjuvant_cycles_count	6
+PATIENTS.clinical_drug|pharmaceutical_therapy_drug_name	taxotere
+PATIENTS.clinical_drug|pharmaceutical_therapy_type	chemotherapy
+PATIENTS.clinical_drug|pharmaceutical_tx_dose_units	mg
+PATIENTS.clinical_drug|pharmaceutical_tx_ended_days_to	143
+PATIENTS.clinical_drug|pharmaceutical_tx_ongoing_indicator	no
+PATIENTS.clinical_drug|pharmaceutical_tx_started_days_to	28
+PATIENTS.clinical_drug|pharmaceutical_tx_total_dose_units	mg
+PATIENTS.clinical_drug|route_of_administration	iv
+PATIENTS.clinical_drug|therapy_regimen	adjuvant
+PATIENTS.clinical_drug|total_dose	733
+PATIENTS.clinical_follow_up|bcr_followup_barcode	tcga-24-1847-f26350
+PATIENTS.clinical_follow_up|bcr_followup_uuid	a302ccb0-5b86-4a6a-8121-fdf54689c24c
+PATIENTS.clinical_follow_up|bcr_patient_barcode	tcga-24-1847
+PATIENTS.clinical_follow_up|bcr_patient_uuid	21966708-4e66-4211-add0-f1515b09e362
+PATIENTS.clinical_follow_up|form_completion_date	2009-6-2
+PATIENTS.clinical_follow_up|last_contact_days_to	343
+PATIENTS.clinical_follow_up|pharmaceutical_tx_adjuvant	yes
+PATIENTS.clinical_follow_up|radiation_treatment_adjuvant	no
+PATIENTS.clinical_follow_up|treatment_outcome_first_course	complete remission/response
+PATIENTS.clinical_follow_up|tumor_status	tumor free
+PATIENTS.clinical_follow_up|vital_status	alive
+PATIENTS.clinical_patient|age_at_initial_pathologic_diagnosis	45
+PATIENTS.clinical_patient|anatomic_neoplasm_subdivision	bilateral
+PATIENTS.clinical_patient|bcr_patient_barcode	tcga-24-1847
+PATIENTS.clinical_patient|bcr_patient_uuid	21966708-4e66-4211-add0-f1515b09e362
+PATIENTS.clinical_patient|birth_days_to	-16529
+PATIENTS.clinical_patient|clinical_stage	stage iv
+PATIENTS.clinical_patient|days_to_initial_pathologic_diagnosis	0
+PATIENTS.clinical_patient|form_completion_date	2009-6-2
+PATIENTS.clinical_patient|gender	female
+PATIENTS.clinical_patient|histological_type	serous cystadenocarcinoma
+PATIENTS.clinical_patient|history_neoadjuvant_treatment	no
+PATIENTS.clinical_patient|icd_10	c56.9
+PATIENTS.clinical_patient|icd_o_3_histology	8441/3
+PATIENTS.clinical_patient|icd_o_3_site	c56.9
+PATIENTS.clinical_patient|informed_consent_verified	yes
+PATIENTS.clinical_patient|initial_pathologic_dx_year	2009
+PATIENTS.clinical_patient|last_contact_days_to	343
+PATIENTS.clinical_patient|lymphovascular_invasion_indicator	yes
+PATIENTS.clinical_patient|method_initial_path_dx	excisional biopsy
+PATIENTS.clinical_patient|patient_id	1847
+PATIENTS.clinical_patient|race	white
+PATIENTS.clinical_patient|residual_disease_largest_nodule	1-10 mm
+PATIENTS.clinical_patient|tissue_source_site	24
+PATIENTS.clinical_patient|tumor_grade	g3
+PATIENTS.clinical_patient|tumor_status	tumor free
+PATIENTS.clinical_patient|tumor_tissue_site	ovary
+PATIENTS.clinical_patient|vital_status	alive
+PATIENTS.manually_curated|center	genome.wustl.edu
+PATIENTS.manually_curated|dataType	dnaseq
+PATIENTS.manually_curated|exp_data_bed_url	ftp://bioinf.iasi.cnr.it/bed/ov/dnaseq/TCGA-24-1847-01A-01W-0633-09.bed
+PATIENTS.manually_curated|exp_metadata_url	ftp://bioinf.iasi.cnr.it/bed/ov/dnaseq/TCGA-24-1847-01A-01W-0633-09.bed.meta
+PATIENTS.manually_curated|id	tcga-24-1847-01a-01w-0633-09
+PATIENTS.manually_curated|md5sum	6a7a34363ee17c0969d51ff56837c9bb
+PATIENTS.manually_curated|ncbi_build	36
+PATIENTS.manually_curated|seqPlatform	illumina_ga2
+PATIENTS.manually_curated|sequence_source	capture
+PATIENTS.manually_curated|sequencer	illumina gaiix
+PATIENTS.manually_curated|tissue_status	tumoral
+PATIENTS.manually_curated|tumor_description	ovarian serous cystadenocarcinoma
+PATIENTS.manually_curated|tumor_sample_uuid	57a6aa0e-360f-4715-aa71-64ac651cdd40
+PATIENTS.manually_curated|tumor_tag	ov

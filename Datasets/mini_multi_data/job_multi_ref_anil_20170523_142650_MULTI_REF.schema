@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<gmqlSchemaCollection name="DatasetName_SCHEMAS" xmlns="http://genomic.elet.polimi.it/entities">
+	<gmqlSchema type="Peak">
+		<field type="STRING">chr</field>
+		<field type="LONG">left</field>
+		<field type="LONG">right</field>
+		<field type="CHAR">strand</field>
+		<field type="STRING">gene_symbol</field>
+		<field type="STRING">entrez_gene_id</field>
+		<field type="DOUBLE">raw_count</field>
+		<field type="DOUBLE">scaled_estimate</field>
+		<field type="STRING">transcript_id</field>
+		<field type="DOUBLE">normalized_count</field>
+		<field type="DOUBLE">count_GENES_PATIENTS</field>
+	</gmqlSchema>
+</gmqlSchemaCollection>
