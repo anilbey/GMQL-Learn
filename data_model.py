@@ -1,6 +1,7 @@
 import pandas as pd
 from parser.parser import Parser
 import numpy as np
+import warnings
 
 
 class DataModel:
@@ -31,6 +32,10 @@ class DataModel:
             full_load: if true then the all-zero rows are also read
 
         """
+        if not full_load:
+            warnings.warn("\n\n You are using the optimized loading technique. "
+                          "All-zero rows are not going to be loaded into memory. "
+                          "To load all the data please set the full_load parameter equal to True.")
         p = Parser(_path)
         self.meta = p.parse_meta(meta)
         self.data = p.parse_data(regs, values, full_load=full_load)

@@ -79,11 +79,13 @@ class Parser:
             if data is not None:
                 df = pd.concat([df, data], axis=0)
         df.index = df['sample']
+        #
+        # df = df.drop('sample', 1)  # 1 for the columns
         return df
 
     def parse_single_data(self, path, cols, selected_region_data, selected_values, full_load):
         # reads a sample file
-        df = pd.read_table(path, engine='c', sep="\t", lineterminator="\n")
+        df = pd.read_table(path, engine='c', sep="\t", lineterminator="\n", header=None)
         df.columns = cols  # column names from schema
         df = df[selected_region_data]
 
