@@ -47,7 +47,7 @@ class DataModel:
 
         """
         if not full_load:
-            warnings.warn("\n\n You are using the optimized loading technique. "
+            warnings.warn("\n\nYou are using the optimized loading technique. "
                           "All-zero rows are not going to be loaded into memory. "
                           "To load all the data please set the full_load parameter equal to True.")
         p = Parser(_path)
@@ -67,13 +67,13 @@ class DataModel:
         meta_index = []
         # To set the index for existing samples in the region dataframe.
         # The index size of the region dataframe does not necessarily be equal to that of metadata df.
+        warnings.warn("\n\nThis method assumes that the last level of the index is the sample_id.\n"
+                      "In case of single index, the index itself should be the sample_id")
         for x in meta_names:
-            meta_index.append(self.meta.ix[self.data.index][x].values)
+            meta_index.append(self.meta.ix[self.data.index.get_level_values(-1)][x].values)
         meta_index = np.asarray(meta_index)
         multi_meta_index = pd.MultiIndex.from_arrays(meta_index, names=meta_names)
         self.data.index = multi_meta_index
-
-
 
     def to_matrix(self, values, selected_regions, default_value=0):
         """Creates a 2D multi-indexed matrix representation of the data.

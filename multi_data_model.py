@@ -90,6 +90,7 @@ class MultiDataModel:
     def compact_view(self, merged_data, selected_meta, reference_no):
         """
         Creates and returns the compact view where the index of the dataframe is a multi index of the selected metadata.
+        Side effect: Alters the merged_data parameter
         :param merged_data: The merged data that is to be used to create the compact view
         :param selected_meta: The selected metadata to create the multi index
         :param reference_no: The reference number that the metadata are going to be taken
