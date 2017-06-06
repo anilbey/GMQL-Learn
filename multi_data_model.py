@@ -4,6 +4,7 @@ import pandas as pd
 import warnings
 import numpy as np
 
+
 class MultiDataModel:
     """
     Derived DataModel class to represent data that are mapped with multiple references
@@ -11,10 +12,27 @@ class MultiDataModel:
     """
 
     def __init__(self):
+        """
+        Constructor
+        """
         self.data_model = []
         return
 
-    def load(self, path, genes_uuid, regs=['chr', 'left', 'right', 'strand'], meta=[], values=[], full_load = False):
+    def load(self, path, genes_uuid, regs=['chr', 'left', 'right', 'strand'], meta=[], values=[], full_load=False):
+        """
+        Loads the multi referenced mapped data from the file system
+        
+        :param path: The path to the files
+        :param genes_uuid: The unique identifier metadata column name to separate the data by the number of references
+        :param regs: The region data that are to be analyzed
+        :param meta: The metadata that are to be analyzed
+        :param values: The values to fill the matrix
+        :param full_load: Specifies the method of parsing the data. If False then parser omits the parsing of zero(0) 
+        values in order to speed up and save memory. However, while creating the matrix, those zero values are going to be put into the matrix.
+        (unless a row contains "all zero columns". This parsing is strongly recommended for sparse datasets.
+        If the full_load parameter is True then all the zero(0) data are going to be read.
+        :return: 
+        """
 
         if not full_load:
             warnings.warn("\n\n You are using the optimized loading technique. "
@@ -36,6 +54,11 @@ class MultiDataModel:
             self.all_meta_data = all_meta_data
 
     def merge(self, samples_uuid):
+        """
+        The method to merge the datamodels belonging to different references
+        :param samples_uuid: The unique identifier metadata column name to separate the data by the number of samples
+        :return: Returns the merged dataframe
+        """
 
         all_meta_data = pd.DataFrame()
         for dm in self.data_model:
@@ -64,16 +87,21 @@ class MultiDataModel:
         merged_df.index = multi_index
         return merged_df
 
+    def compact_view(self, merged_data, selected_meta, reference_no):
+        """
+        Creates and returns the compact view where the index of the dataframe is a multi index of the selected metadata.
+        :param merged_data: The merged data that is to be used to create the compact view
+        :param selected_meta: The selected metadata to create the multi index
+        :param reference_no: The reference number that the metadata are going to be taken
+        :return: Returns the multi-indexed dataframe w.r.t. the selected metadata
+        """
+        meta_names = list(selected_meta)
+        meta_index = []
 
+        for x in meta_names:
+            meta_index.append(self.all_meta_data.ix[merged_data.index.get_level_values(reference_no)][x].values)
+        meta_index = np.asarray(meta_index)
+        multi_meta_index = pd.MultiIndex.from_arrays(meta_index, names=meta_names)
+        merged_data.index = multi_meta_index
+        return merged_data
 
-# sample usage, will be provided in an ipython notebook 
-#
-# genes_uuid = "GENES.biospecimen_aliquot|bcr_patient_uuid"
-# patients_uuid = "PATIENTS.biospecimen_aliquot|bcr_patient_uuid"
-# path = "./multi_ref_data/job_multi_ref_anil_20170523_142650_MULTI_REF/files/"
-# selected_regs = ['chr', 'left', 'right', 'strand']
-# selected_vals = ['count_GENES_PATIENTS']
-#
-# m = MultiDataModel()
-# m.load(path, genes_uuid, selected_regs,[], selected_vals, full_load=True)
-# print(m.merge(patients_uuid))

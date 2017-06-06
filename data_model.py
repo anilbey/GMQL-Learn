@@ -10,12 +10,23 @@ class DataModel:
     """
 
     def __init__(self):
+        """
+        Constructor
+        """
         self.data = None
         self.meta = None
         return
 
     @classmethod
     def from_memory(cls, data, meta):
+        """
+        Overloaded constructor to create the DataModel object from memory data and meta variables.
+        Args:
+            :param data: The data model
+            :param meta: The metadata
+            :return: A DataModel object 
+        """
+
         obj = cls()
         obj.data = data
         obj.meta = meta
@@ -25,11 +36,14 @@ class DataModel:
         """Parses and loads the data into instance attributes.
 
         Args:
-            :param path: The path to the dataset on the filesystem.
-            regs: the regions that are to be analyzed.
-            meta: the meta-data that are to be analyzed.
-            values: the values that are to be selected.
-            full_load: if true then the all-zero rows are also read
+            :param path: The path to the dataset on the filesystem
+            :param regs: the regions that are to be analyzed
+            :param meta: the meta-data that are to be analyzed
+            :param values: the values that are to be selected
+            :param full_load: Specifies the method of parsing the data. If False then parser omits the parsing of zero(0) 
+            values in order to speed up and save memory. However, while creating the matrix, those zero values are going to be put into the matrix.
+            (unless a row contains "all zero columns". This parsing is strongly recommended for sparse datasets.
+            If the full_load parameter is True then all the zero(0) data are going to be read.
 
         """
         if not full_load:
@@ -45,28 +59,30 @@ class DataModel:
             index to the selected meta data.
 
         Args:
-            selected_meta: The list of the metadata users want to index with.
+            :param selected_meta: The list of the metadata users want to index with.
 
         """
         meta_names = list(selected_meta)
         meta_names.append('sample')
         meta_index = []
+        # To set the index for existing samples in the region dataframe.
+        # The index size of the region dataframe does not necessarily be equal to that of metadata df.
         for x in meta_names:
             meta_index.append(self.meta.ix[self.data.index][x].values)
         meta_index = np.asarray(meta_index)
         multi_meta_index = pd.MultiIndex.from_arrays(meta_index, names=meta_names)
         self.data.index = multi_meta_index
-        # TODO set the index for existing samples in the region dataframe.
-        # The index size of the region dataframe does not necessarily be equal to that of metadata df.
+
+
 
     def to_matrix(self, values, selected_regions, default_value=0):
         """Creates a 2D multi-indexed matrix representation of the data.
             This representation allows the data to be sent to the machine learning algorithms.
 
         Args:
-            values: The value or values that are going to fill the matrix.
-            selected_regions: The index to one axis of the matrix.
-            default_value: The default fill value of the matrix
+            :param values: The value or values that are going to fill the matrix.
+            :param selected_regions: The index to one axis of the matrix.
+            :param default_value: The default fill value of the matrix
 
         """
         if isinstance(values, list):
