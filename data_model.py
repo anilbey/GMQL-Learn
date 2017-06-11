@@ -2,6 +2,7 @@ import pandas as pd
 from parser.parser import Parser
 import numpy as np
 import warnings
+import statistics
 
 
 class DataModel:
@@ -95,4 +96,62 @@ class DataModel:
                                    values=values, columns=selected_regions, index=['sample'],
                                    fill_value=default_value)
         print("end of pivoting")
+
+
+    def get_statistics_values(self, cluster, selected_meta):
+        """
+        Retrieves the values which are later going to be used in the calculation of statistics
+        :param cluster: cluster that contains the data
+        :param selected_meta: the values of the selected_meta 
+        :return: the values of the selected meta of the cluster
+        """
+        warnings.warn("\n\nThis method assumes that the last level of the index is the sample_id.\n"
+                      "In case of single index, the index itself should be the sample_id")
+        sample_ids = cluster.index.get_level_values(-1)
+        corresponding_meta = self.meta.loc[sample_ids]
+        values = corresponding_meta[selected_meta]
+
+        try:
+            values = values.astype(float)
+        except ValueError:
+            print("the values should be numeric")
+        return values
+
+    def cluster_mean(self, cluster, selected_meta):
+        """
+        calculates the mean of the cluster based on the selected meta data
+        :param cluster: cluster that contains the data
+        :param selected_meta: the selected meta data name 
+        :return: mean value of the selected meta of the cluster
+        """
+        values = self.get_statistics_values(cluster,selected_meta)
+        mean = statistics.mean(values)
+        print(mean)
+        return mean
+
+    def cluster_variance(self, cluster, selected_meta):
+        """
+        calculates the variance of the cluster based on the selected meta data
+        :param cluster: cluster that contains the data
+        :param selected_meta: the selected meta data name 
+        :return: variance of the selected meta of the cluster
+        """
+        values = self.get_statistics_values(cluster,selected_meta)
+        var = statistics.variance(values)
+        print(var)
+        return var
+
+    def cluster_std(self, cluster, selected_meta):
+        """
+            calculates the standard deviation of the cluster based on the selected meta data
+            :param cluster: cluster that contains the data
+            :param selected_meta: the selected meta data name 
+            :return: standard deviation of the selected meta of the cluster
+            """
+        values = self.get_statistics_values(cluster, selected_meta)
+        stdev = statistics.stdev(values)
+        print(stdev)
+        return stdev
+
+
 
