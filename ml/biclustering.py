@@ -5,30 +5,36 @@ Biclustering algorithms.
 
 from sklearn.cluster.bicluster import SpectralBiclustering
 from sklearn.cluster.bicluster import SpectralCoclustering
+from sklearn.metrics import consensus_score
+
 
 class Biclustering:
 
-    def __init__(self):
-        model = None
+    def __init__(self, model):
+        self.model = model
 
 
     @classmethod
-    def spectral_biclustering(self, *args):
+    def spectral_biclustering(cls, *args):
         """
             Wrapper method for the spectral_biclustering algorithm
             :param args: the arguments to be sent to the sci-kit implementation
             :return: 
         """
-        self.model = SpectralBiclustering(*args)
+
+        model = SpectralBiclustering(*args)
+        return cls(model)
 
     @classmethod
-    def spectral_coclustering(self, *args):
+    def spectral_coclustering(cls, *args):
         """
         Wrapper method for the spectral_coclustering algorithm
         :param args: the arguments to be sent to the sci-kit implementation
         :return: 
         """
-        self.model = SpectralCoclustering(*args)
+
+        model = SpectralCoclustering(*args)
+        return cls(model)
 
     def fit(self, data):
         """
@@ -50,3 +56,11 @@ class Biclustering:
         bicluster = res[res.columns[self.model.biclusters_[1][column_no]]]
         return bicluster
 
+    def bicluster_similarity(self, reference_model):
+        """
+        Calcolates the similarity between the current model of biclusters and the reference model of biclusters
+        :param reference_model: The reference model of biclusters
+        :return: Returns the consensus score(Hochreiter et. al., 2010), i.e. the similarity of two sets of biclusters.
+        """
+        similarity_score = consensus_score(self.model.biclusters_, reference_model.biclusters_)
+        return similarity_score
