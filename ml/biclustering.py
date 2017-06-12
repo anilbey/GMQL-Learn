@@ -19,7 +19,7 @@ class Biclustering:
         """
             Wrapper method for the spectral_biclustering algorithm
             :param args: the arguments to be sent to the sci-kit implementation
-            :return: 
+            :return: returns the Biclustering object
         """
 
         model = SpectralBiclustering(*args)
@@ -30,7 +30,7 @@ class Biclustering:
         """
         Wrapper method for the spectral_coclustering algorithm
         :param args: the arguments to be sent to the sci-kit implementation
-        :return: 
+        :return: returns the Biclustering object
         """
 
         model = SpectralCoclustering(*args)
