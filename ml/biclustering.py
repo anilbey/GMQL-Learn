@@ -13,7 +13,6 @@ class Biclustering:
     def __init__(self, model):
         self.model = model
 
-
     @classmethod
     def spectral_biclustering(cls, *args):
         """

@@ -202,4 +202,4 @@ class Clustering:
         :param kwds: any further parameters that are passed to the distance function
         :return: the mean Silhouette Coefficient of all samples
         """
-        return silhouette_score(data, self.model.labels_, metric='euclidean', sample_size=None, random_state=None, **kwds)
+        return silhouette_score(data, self.model.labels_, metric, sample_size, random_state, **kwds)
