@@ -3,6 +3,7 @@ from parser.parser import Parser
 import numpy as np
 import warnings
 import statistics
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 class DataModel:
@@ -16,6 +17,7 @@ class DataModel:
         """
         self.data = None
         self.meta = None
+        self._path = None
         return
 
     @classmethod
@@ -54,7 +56,7 @@ class DataModel:
         p = Parser(_path)
         self.meta = p.parse_meta(meta)
         self.data = p.parse_data(regs, values, full_load=full_load)
-
+        self._path = _path
     def set_meta(self, selected_meta):
         """Sets one axis of the 2D multi-indexed dataframe
             index to the selected meta data.
@@ -147,11 +149,69 @@ class DataModel:
             :param cluster: cluster that contains the data
             :param selected_meta: the selected meta data name 
             :return: standard deviation of the selected meta of the cluster
-            """
+        """
         values = self.get_statistics_values(cluster, selected_meta)
         stdev = statistics.stdev(values)
         print(stdev)
         return stdev
 
+    def to_bag_of_genomes(self, clustering_object):
+        """
+        Creates a bag of genomes representation for data mining purposes
+        Each document (genome) in the representation is a set of metadata key and value pairs belonging to the same cluster.
+        The bag of genomes are saved under ./bag_of_genomes/ directory
+        :param clustering_object: The clustering object
+        :return: None
+        """
 
+        no_clusters = clustering_object.model.n_clusters
+        meta_files = Parser._get_files('meta', self._path)
+
+        meta_dict = {}
+        for f in meta_files:
+            meta_dict[Parser.get_sample_id(f)] = f
+
+        clusters = []
+        for c in range(0, no_clusters):
+            clusters.append(clustering_object.retrieve_cluster(self.data, c).index.get_level_values(-1).values)
+
+        # to create the bag of genomes files
+        for c in range(0, no_clusters):
+            document = open('./bag_of_genomes/document' + str(c) + '.bag_of_genome', 'a')
+            for sample in clusters[c]:
+                f = open(meta_dict[sample], 'r')
+                for line in f:
+                    line = line.replace(' ', '_')
+                    splitted = line.split('\t')
+                    document.write(splitted[0] + '=' + splitted[1])
+                f.close()
+            document.close()
+
+    @staticmethod
+    def to_term_document_matrix(path_to_bag_of_genomes):
+        """
+        Creates a term-document matrix which is a mathematical matrix that describes the frequency of terms 
+        that occur in a collection of documents (in our case a collection of genomes).
+        :param path_to_bag_of_genomes: Path to the documents (genomes)
+        :return: returns the term-document dataframe 
+        """
+        token_dict = {}
+
+        def BoG_tokenizer(_text):
+            return _text.split('\n')
+
+        for file in Parser._get_files('.bag_of_genome', path_to_bag_of_genomes):
+            f = open(file, 'r')
+            text = f.read()
+            token_dict[file] = text
+
+        tfidf = TfidfVectorizer(tokenizer=BoG_tokenizer, use_idf=True, smooth_idf=False,
+                                max_df=0.99)  # max df is less than 1.0 to ignore the tokens existing in all of the documents
+
+        tfs = tfidf.fit_transform(token_dict.values())
+        data = tfs.toarray()
+        columns = tfidf.get_feature_names()
+        df = pd.DataFrame(data, columns=columns)
+        term_document_df = df.T
+        return term_document_df
 
