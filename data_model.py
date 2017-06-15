@@ -4,7 +4,8 @@ import numpy as np
 import warnings
 import statistics
 from sklearn.feature_extraction.text import TfidfVectorizer
-
+from ml.clustering import Clustering
+from ml.biclustering import Biclustering
 
 class DataModel:
     """
@@ -164,16 +165,22 @@ class DataModel:
         :return: None
         """
 
-        no_clusters = clustering_object.model.n_clusters
         meta_files = Parser._get_files('meta', self._path)
-
         meta_dict = {}
         for f in meta_files:
             meta_dict[Parser.get_sample_id(f)] = f
 
         clusters = []
-        for c in range(0, no_clusters):
-            clusters.append(clustering_object.retrieve_cluster(self.data, c).index.get_level_values(-1).values)
+        if isinstance(clustering_object, Clustering):
+            no_clusters = clustering_object.model.n_clusters
+            for c in range(0, no_clusters):
+                clusters.append(clustering_object.retrieve_cluster(self.data, c).index.get_level_values(-1).values)
+
+        elif isinstance(clustering_object, Biclustering):
+            no_clusters = clustering_object.model.n_clusters[0]  # 0 for the rows
+            no_col_clusters = clustering_object.model.n_clusters[1]  # 1 for the columns
+            for c in range(0, no_clusters):
+                clusters.append(clustering_object.retrieve_bicluster(self.data, c*no_col_clusters, 0).index.get_level_values(-1).values)  # sample names
 
         # to create the bag of genomes files
         for c in range(0, no_clusters):
