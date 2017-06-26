@@ -37,7 +37,7 @@ class DataModel:
         obj.meta = meta
         return obj
 
-    def load(self, _path, regs=['chr', 'left', 'right', 'strand'], meta=[], values=[], full_load=False):
+    def load(self, _path, regs=['chr', 'left', 'right', 'strand'], meta=[], values=[], full_load=False, file_extension="gdm"):
         """Parses and loads the data into instance attributes.
 
         Args:
@@ -57,9 +57,9 @@ class DataModel:
                           "To load all the data please set the full_load parameter equal to True.")
         p = Parser(_path)
         self.meta = p.parse_meta(meta)
-        self.data = p.parse_data(regs, values, full_load=full_load)
+        self.data = p.parse_data(regs, values, full_load=full_load, file_extension)
         self._path = _path
-        
+
     def set_meta(self, selected_meta):
         """Sets one axis of the 2D multi-indexed dataframe
             index to the selected meta data.

@@ -107,7 +107,7 @@ class Parser:
         df['sample'] = sample
         return df
 
-    def parse_data(self, selected_region_data, selected_values, full_load=False):
+    def parse_data(self, selected_region_data, selected_values, full_load=False, extension="gdm"):
         # reads all sample files
         regions = list(selected_region_data)
         if type(selected_values) is list:
@@ -115,7 +115,7 @@ class Parser:
         else:
             regions.append(selected_values)
 
-        files = self._get_files("gdm", self.path)
+        files = self._get_files(extension, self.path)
         df = pd.DataFrame(dtype=float)
 
         cols = self.parse_schema(self.schema)
