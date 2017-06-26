@@ -66,7 +66,10 @@ class Parser:
         df = df.T
         sample = self._get_sample_name(fname)
         if selected_meta_data:  # if null then keep all the columns
-            df = df[selected_meta_data]
+            try:
+                df = df[selected_meta_data]
+            except:
+                pass
         df['sample'] = sample
         return df
 

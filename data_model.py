@@ -59,6 +59,7 @@ class DataModel:
         self.meta = p.parse_meta(meta)
         self.data = p.parse_data(regs, values, full_load=full_load)
         self._path = _path
+        
     def set_meta(self, selected_meta):
         """Sets one axis of the 2D multi-indexed dataframe
             index to the selected meta data.
