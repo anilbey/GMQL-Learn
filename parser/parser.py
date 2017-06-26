@@ -7,7 +7,7 @@ General purpose parser for the (tab separated) output of the MAP operations of G
 import pandas as pd
 import os
 import xml.etree.ElementTree
-
+from tqdm import tqdm
 
 class Parser:
 
@@ -74,7 +74,8 @@ class Parser:
         # reads all meta data files
         files = self._get_files("meta", self.path)
         df = pd.DataFrame()
-        for f in files:
+        print("Parsing the metadata files...")
+        for f in tqdm(files):
             data = self.parse_single_meta(f, selected_meta_data)
             if data is not None:
                 df = pd.concat([df, data], axis=0)
@@ -115,8 +116,8 @@ class Parser:
         df = pd.DataFrame(dtype=float)
 
         cols = self.parse_schema(self.schema)
-        for f in files:
+        print("Parsing the data files...")
+        for f in tqdm(files):
             data = self.parse_single_data(f, cols, regions, selected_values, full_load)
             df = pd.concat([data, df], axis=0)
         return df
-
