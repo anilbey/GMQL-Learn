@@ -57,7 +57,7 @@ class DataModel:
                           "To load all the data please set the full_load parameter equal to True.")
         p = Parser(_path)
         self.meta = p.parse_meta(meta)
-        self.data = p.parse_data(regs, values, full_load=full_load, file_extension)
+        self.data = p.parse_data(regs, values, full_load=full_load, extension=file_extension)
         self._path = _path
 
     def set_meta(self, selected_meta):
