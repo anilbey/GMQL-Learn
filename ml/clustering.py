@@ -5,11 +5,28 @@ Clustering algorithms
 
 from sklearn.cluster import *
 from sklearn.metrics.cluster import *
+from pyclustering.cluster.xmeans import xmeans, splitting_type
+import pandas as pd
 
 class Clustering:
 
     def __init__(self, model):
         self.model = model
+
+    @classmethod
+    def xmeans(cls, initial_centers=None, kmax=20, tolerance=0.025, criterion=splitting_type.BAYESIAN_INFORMATION_CRITERION, ccore=False):
+        """
+        Wrapper method for the x-means clustering algorithm
+        :param initial_centers: Initial coordinates of centers of clusters that are represented by list: [center1, center2, ...] 
+        Note: The dimensions of the initial centers should be same as of the dataset. 
+        :param kmax: Maximum number of clusters that can be allocated.
+        :param tolerance: Stop condition for each iteration: if maximum value of change of centers of clusters is less than tolerance than algorithm will stop processing
+        :param criterion: Type of splitting creation.
+        :param ccore: Defines should be CCORE (C++ pyclustering library) used instead of Python code or not.
+        :return: returns the clustering object
+        """
+        model = xmeans(None, initial_centers, kmax, tolerance, criterion, ccore)
+        return cls(model)
 
     @classmethod
     def kmeans(cls, *args):
@@ -116,7 +133,29 @@ class Clustering:
         :param data: Data to be fit
         :return: 
         """
-        self.model.fit(data)
+        if isinstance(self.model, xmeans):
+            if isinstance(data, pd.DataFrame):
+                data = data.values.tolist()
+            else:  # in case data is already in the matrix form
+                data = data.tolist()
+            self.model._xmeans__pointer_data = data
+            self.model.process()
+
+        else:
+            self.model.fit(data)
+
+    @property
+    def _labels_from_pyclusters(self):
+        """
+        Computes and returns the list of labels indicating the data points and the corresponding cluster ids.
+        :return: The list of labels
+        """
+        clusters = self.model.get_clusters()
+        labels = []
+        for i in range(0, len(clusters)):
+            for j in clusters[i]:
+                labels.insert(j, i)
+        return labels
 
     def retrieve_cluster(self, df, cluster_no):
         """
@@ -125,8 +164,21 @@ class Clustering:
         :param cluster_no: the cluster number
         :return: returns the extracted cluster
         """
-        mask = self.model.labels_ == cluster_no  # a boolean mask
+        if isinstance(self.model, xmeans):
+            clusters = self.model.get_clusters()
+            mask = []
+            for i in range(0, df.shape[0]):
+                mask.append(i in clusters[cluster_no])
+        else:
+            mask = self.model.labels_ == cluster_no  # a boolean mask
         return df[mask]
+
+    @staticmethod
+    def get_labels(obj):
+        if isinstance(obj.model, xmeans):
+            return obj._labels_from_pyclusters
+        else:
+            return obj.model.labels_
 
     def adjusted_mutual_info(self, reference_clusters):
         """
@@ -134,7 +186,7 @@ class Clustering:
         :param reference_clusters: Clusters that are to be used as reference  
         :return: returns the value of the adjusted mutual information score
         """
-        return adjusted_mutual_info_score(self.model.labels_, reference_clusters.model.labels_)
+        return adjusted_mutual_info_score(self.get_labels(self), self.get_labels(reference_clusters))
 
     def adjusted_rand_score(self, reference_clusters):
         """
@@ -142,7 +194,7 @@ class Clustering:
         :param reference_clusters: Clusters that are to be used as reference  
         :return: returns the value of the adjusted rand score
         """
-        return adjusted_rand_score(self.model.labels_, reference_clusters.model.labels_)
+        return adjusted_rand_score(self.get_labels(self), self.get_labels(reference_clusters))
 
     def calinski_harabasz(self, data):
         """
@@ -150,7 +202,7 @@ class Clustering:
         :param data: The original dataset that the clusters are generated from
         :return: The resulting Calinski-Harabarsz score
         """
-        return calinski_harabaz_score(data, self.model.labels_)
+        return calinski_harabaz_score(data, self.get_labels(self))
 
     def completeness_score(self, reference_clusters):
         """
@@ -158,7 +210,7 @@ class Clustering:
         :param reference_clusters: Clusters that are to be used as reference  
         :return: the resulting completeness score
         """
-        return completeness_score(self.model.labels_, reference_clusters.model.labels_)
+        return completeness_score(self.get_labels(self), self.get_labels(reference_clusters))
 
     def fowlkes_mallows(self, reference_clusters):
         """
@@ -166,7 +218,7 @@ class Clustering:
         :param reference_clusters: Clusters that are to be used as reference  
         :return: The resulting Fowlkes-Mallows score.
         """
-        return fowlkes_mallows_score(self.model.labels_, reference_clusters.model.labels_)
+        return fowlkes_mallows_score(self.get_labels(self), self.get_labels(reference_clusters))
 
     def homogeneity_score(self, reference_clusters):
         """
@@ -174,7 +226,7 @@ class Clustering:
         :param reference_clusters: Clusters that are to be used as reference  
         :return: The resulting homogeneity score.
         """
-        return homogeneity_score(self.model.labels_, reference_clusters.model.labels_)
+        return homogeneity_score(self.get_labels(self), self.get_labels(reference_clusters))
 
     def mutual_info_score(self, reference_clusters):
         """
@@ -182,7 +234,7 @@ class Clustering:
         :param reference_clusters: Clusters that are to be used as reference  
         :return: The resulting MI score.
         """
-        return mutual_info_score(self.model.labels_, reference_clusters.model.labels_)
+        return mutual_info_score(self.get_labels(self), self.get_labels(reference_clusters))
 
     def normalized_mutual_info_score(self, reference_clusters):
         """
@@ -190,7 +242,7 @@ class Clustering:
         :param reference_clusters: Clusters that are to be used as reference  
         :return: The resulting normalized mutual information score.
         """
-        return normalized_mutual_info_score(self.model.labels_, reference_clusters.model.labels_)
+        return normalized_mutual_info_score(self.get_labels(self), self.get_labels(reference_clusters))
 
     def silhouette_score(self, data,  metric='euclidean', sample_size=None, random_state=None, **kwds):
         """
@@ -202,4 +254,4 @@ class Clustering:
         :param kwds: any further parameters that are passed to the distance function
         :return: the mean Silhouette Coefficient of all samples
         """
-        return silhouette_score(data, self.model.labels_, metric, sample_size, random_state, **kwds)
+        return silhouette_score(data, self.get_labels(self), metric, sample_size, random_state, **kwds)
