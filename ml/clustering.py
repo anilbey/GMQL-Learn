@@ -6,6 +6,7 @@ Clustering algorithms
 from sklearn.cluster import *
 from sklearn.metrics.cluster import *
 from pyclustering.cluster.xmeans import xmeans, splitting_type
+from pyclustering.cluster.clarans import clarans
 import pandas as pd
 
 class Clustering:
@@ -26,6 +27,18 @@ class Clustering:
         :return: returns the clustering object
         """
         model = xmeans(None, initial_centers, kmax, tolerance, criterion, ccore)
+        return cls(model)
+
+    @classmethod
+    def clarans(cls, number_clusters, num_local, max_neighbour):
+        """
+        Wrapper method for the CLARANS clustering algorithm
+        :param number_clusters: the number of clusters to be allocated
+        :param num_local: the number of local minima obtained (amount of iterations for solving the problem).
+        :param max_neighbour: the number of local minima obtained (amount of iterations for solving the problem).
+        :return: the resulting clustering object
+        """
+        model = clarans(None, number_clusters, num_local, max_neighbour)
         return cls(model)
 
     @classmethod
@@ -127,20 +140,31 @@ class Clustering:
         model = SpectralClustering(*args)
         return cls(model)
 
+    @staticmethod
+    def is_pyclustering_instance(model):
+        """
+        Checks if the clustering algorithm belongs to pyclustering
+        :param model: the clustering algorithm model
+        :return: the truth value (Boolean)
+        """
+        return any(isinstance(model, i) for i in [xmeans, clarans])
+
     def fit(self, data):
         """
         Performs clustering
         :param data: Data to be fit
         :return: 
         """
-        if isinstance(self.model, xmeans):
+        if self.is_pyclustering_instance(self.model):
             if isinstance(data, pd.DataFrame):
                 data = data.values.tolist()
             else:  # in case data is already in the matrix form
                 data = data.tolist()
-            self.model._xmeans__pointer_data = data
+            if isinstance(self.model, xmeans):
+                self.model._xmeans__pointer_data = data
+            elif isinstance(self.model, clarans):
+                self.model._clarans__pointer_data = data
             self.model.process()
-
         else:
             self.model.fit(data)
 
@@ -164,7 +188,7 @@ class Clustering:
         :param cluster_no: the cluster number
         :return: returns the extracted cluster
         """
-        if isinstance(self.model, xmeans):
+        if self.is_pyclustering_instance(self.model):
             clusters = self.model.get_clusters()
             mask = []
             for i in range(0, df.shape[0]):
@@ -175,7 +199,12 @@ class Clustering:
 
     @staticmethod
     def get_labels(obj):
-        if isinstance(obj.model, xmeans):
+        """
+        Retrieve the labels of a clustering object
+        :param obj: the clustering object
+        :return: the resulting labels
+        """
+        if Clustering.is_pyclustering_instance(obj.model):
             return obj._labels_from_pyclusters
         else:
             return obj.model.labels_

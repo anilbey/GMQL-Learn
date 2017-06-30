@@ -7,7 +7,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from ml.clustering import Clustering
 from ml.biclustering import Biclustering
 from tqdm import tqdm
-from pyclustering.cluster.xmeans import xmeans
 from wordcloud import WordCloud
 
 class DataModel:
@@ -178,8 +177,7 @@ class DataModel:
 
         clusters = []
         if isinstance(clustering_object, Clustering):
-
-            if isinstance(clustering_object.model, xmeans):
+            if Clustering.is_pyclustering_instance(clustering_object.model):
                 no_clusters = len(clustering_object.model.get_clusters())
             else:
                 no_clusters = clustering_object.model.n_clusters
