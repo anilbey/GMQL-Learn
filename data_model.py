@@ -7,6 +7,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from ml.clustering import Clustering
 from ml.biclustering import Biclustering
 from tqdm import tqdm
+from pyclustering.cluster.xmeans import xmeans
+from wordcloud import WordCloud
 
 class DataModel:
     """
@@ -105,7 +107,6 @@ class DataModel:
                                    fill_value=default_value)
         print("end of pivoting")
 
-
     def get_values(self, cluster, selected_meta):
         """
         Retrieves the values which are later going to be used in the calculation of statistics
@@ -177,7 +178,11 @@ class DataModel:
 
         clusters = []
         if isinstance(clustering_object, Clustering):
-            no_clusters = clustering_object.model.n_clusters
+
+            if isinstance(clustering_object.model, xmeans):
+                no_clusters = len(clustering_object.model.get_clusters())
+            else:
+                no_clusters = clustering_object.model.n_clusters
             for c in range(0, no_clusters):
                 clusters.append(clustering_object.retrieve_cluster(self.data, c).index.get_level_values(-1).values)
 
@@ -201,7 +206,7 @@ class DataModel:
             document.close()
 
     @staticmethod
-    def to_term_document_matrix(path_to_bag_of_genomes, max_df=0.99, min_df=1):
+    def to_term_document_matrix(path_to_bag_of_genomes, max_df=0.99, min_df=1, use_idf=False):
         """
         Creates a term-document matrix which is a mathematical matrix that describes the frequency of terms
         that occur in a collection of documents (in our case a collection of genomes).
@@ -220,7 +225,7 @@ class DataModel:
             text = f.read()
             token_dict[file] = text
 
-        tfidf = TfidfVectorizer(tokenizer=BoG_tokenizer, use_idf=True, smooth_idf=False,
+        tfidf = TfidfVectorizer(tokenizer=BoG_tokenizer, use_idf=use_idf, smooth_idf=False,
                                 max_df=max_df, min_df=min_df)  # max df is less than 1.0 to ignore the tokens existing in all of the documents
 
         tfs = tfidf.fit_transform(token_dict.values())
@@ -229,3 +234,60 @@ class DataModel:
         df = pd.DataFrame(data, columns=columns)
         term_document_df = df.T
         return term_document_df
+
+    def tf(self, cluster):
+        """
+        Computes the term frequency and stores it as a dictionary
+        :param cluster: the cluster that contains the metadata
+        :return: tf dictionary
+        """
+        counts = dict()
+        lines = cluster.split('\n')
+        for line in lines:
+            counts[line] = counts.get(line, 0) + 1
+        return counts
+
+    def best_descriptive_meta_dict(self, path_to_bag_of_genomes, cluster_no):
+        """
+        Computes the importance of each metadata by using tf * coverage (the percentage of the term occuring in a cluster)
+        :param path_to_bag_of_genomes: The directory path
+        :param cluster_no: cluster number 
+        :return: returns the computed dictionary
+        """
+        clusters = []
+        for file in Parser._get_files('.bag_of_genome', path_to_bag_of_genomes):
+            f = open(file, 'r')
+            text = f.read()
+            clusters.append(text)
+
+        all_clusters = ""
+        for c in clusters:
+            all_clusters += c  
+
+        all_clusters_tf = self.tf(all_clusters)
+
+        cluster_dict = self.tf(clusters[cluster_no])
+        for key, value in cluster_dict.items():
+            cluster_dict[key] = cluster_dict[key] * (cluster_dict[key] / all_clusters_tf[key])
+        return cluster_dict
+
+    @staticmethod
+    def visualize_cloud_of_words( dictionary):
+
+        """
+        Draws the cloud of words
+        :param dictionary: Dictionary of values
+        :return: None
+        """
+        # Generate a word cloud image
+        wc = WordCloud(width=800, height=600)
+        wc = wc.generate_from_frequencies(dictionary)
+
+        # Display the generated image:
+        # the matplotlib way:
+        import matplotlib.pyplot as plt
+        plt.rcParams['figure.figsize'] = (15, 15)
+        plt.imshow(wc, interpolation='bilinear')
+        plt.axis("off")
+        plt.show()
+
