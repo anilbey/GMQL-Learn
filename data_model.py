@@ -245,11 +245,12 @@ class DataModel:
             counts[line] = counts.get(line, 0) + 1
         return counts
 
-    def best_descriptive_meta_dict(self, path_to_bag_of_genomes, cluster_no):
+    def best_descriptive_meta_dict(self, path_to_bag_of_genomes, cluster_no, preprocess=True):
         """
         Computes the importance of each metadata by using tf * coverage (the percentage of the term occuring in a cluster)
         :param path_to_bag_of_genomes: The directory path
-        :param cluster_no: cluster number 
+        :param cluster_no: cluster number
+        :param preprocess: to remove the redundant information from the metadata
         :return: returns the computed dictionary
         """
         clusters = []
@@ -260,17 +261,30 @@ class DataModel:
 
         all_clusters = ""
         for c in clusters:
-            all_clusters += c  
+            all_clusters += c
 
         all_clusters_tf = self.tf(all_clusters)
-
+        result_dict = dict()
         cluster_dict = self.tf(clusters[cluster_no])
         for key, value in cluster_dict.items():
-            cluster_dict[key] = cluster_dict[key] * (cluster_dict[key] / all_clusters_tf[key])
-        return cluster_dict
+            new_val = cluster_dict[key] * (cluster_dict[key] / all_clusters_tf[key])
+            if preprocess:
+                try:
+                    new_key = key.split('__')[1]
+                except:
+                    new_key = key
+                result_dict[new_key] = new_val
+            else:
+                 cluster_dict[key] = new_val
+
+        if preprocess:
+            return result_dict
+        else:
+            return cluster_dict
+
 
     @staticmethod
-    def visualize_cloud_of_words( dictionary):
+    def visualize_cloud_of_words(dictionary):
 
         """
         Draws the cloud of words
@@ -288,4 +302,3 @@ class DataModel:
         plt.imshow(wc, interpolation='bilinear')
         plt.axis("off")
         plt.show()
-

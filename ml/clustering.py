@@ -7,7 +7,11 @@ from sklearn.cluster import *
 from sklearn.metrics.cluster import *
 from pyclustering.cluster.xmeans import xmeans, splitting_type
 from pyclustering.cluster.clarans import clarans
+from pyclustering.cluster.rock import rock
+from pyclustering.cluster.optics import optics
+
 import pandas as pd
+import numpy as np
 
 class Clustering:
 
@@ -17,9 +21,9 @@ class Clustering:
     @classmethod
     def xmeans(cls, initial_centers=None, kmax=20, tolerance=0.025, criterion=splitting_type.BAYESIAN_INFORMATION_CRITERION, ccore=False):
         """
-        Wrapper method for the x-means clustering algorithm
-        :param initial_centers: Initial coordinates of centers of clusters that are represented by list: [center1, center2, ...] 
-        Note: The dimensions of the initial centers should be same as of the dataset. 
+        Constructor of the x-means clustering algorithm
+        :param initial_centers: Initial coordinates of centers of clusters that are represented by list: [center1, center2, ...]
+        Note: The dimensions of the initial centers should be same as of the dataset.
         :param kmax: Maximum number of clusters that can be allocated.
         :param tolerance: Stop condition for each iteration: if maximum value of change of centers of clusters is less than tolerance than algorithm will stop processing
         :param criterion: Type of splitting creation.
@@ -32,7 +36,7 @@ class Clustering:
     @classmethod
     def clarans(cls, number_clusters, num_local, max_neighbour):
         """
-        Wrapper method for the CLARANS clustering algorithm
+        Constructor of the CLARANS clustering algorithm
         :param number_clusters: the number of clusters to be allocated
         :param num_local: the number of local minima obtained (amount of iterations for solving the problem).
         :param max_neighbour: the number of local minima obtained (amount of iterations for solving the problem).
@@ -42,9 +46,49 @@ class Clustering:
         return cls(model)
 
     @classmethod
+    def rock(cls, data, eps, number_clusters, threshold=0.5, ccore=False):
+        """
+        Constructor of the ROCK cluster analysis algorithm
+        :param eps: Connectivity radius (similarity threshold), points are neighbors if distance between them is less than connectivity radius
+        :param number_clusters: Defines number of clusters that should be allocated from the input data set
+        :param threshold: Value that defines degree of normalization that influences on choice of clusters for merging during processing
+        :param ccore: Defines should be CCORE (C++ pyclustering library) used instead of Python code or not.
+        :return: The resulting clustering object
+        """
+        data = cls.input_preprocess(data)
+        model = rock(data, eps, number_clusters, threshold, ccore)
+        return cls(model)
+
+    @staticmethod
+    def input_preprocess(data):
+        if isinstance(data, pd.DataFrame):
+            data = data.values.tolist()
+        elif isinstance(data, np.ndarray):  # in case data is already in the matrix form
+            data = data.tolist()
+        return data
+
+    @classmethod
+    def optics(cls, data, eps, minpts, ccore=False):
+        """
+        Constructor of OPTICS clustering algorithm 
+        :param data: Input data that is presented as a list of points (objects), where each point is represented by list or tuple
+        :param eps: Connectivity radius between points, points may be connected if distance between them less than the radius
+        :param minpts: Minimum number of shared neighbors that is required for establishing links between points
+        :param amount_clusters: Optional parameter where amount of clusters that should be allocated is specified.
+                    In case of usage 'amount_clusters' connectivity radius can be greater than real, in other words, there is place for mistake
+                    in connectivity radius usage.
+        :param ccore: if True than DLL CCORE (C++ solution) will be used for solving the problem
+        :return: the resulting clustering object
+        """
+        data = cls.input_preprocess(data)
+        model = optics(data, eps, minpts)
+        return cls(model)
+
+
+    @classmethod
     def kmeans(cls, *args):
         """
-            Wrapper method for the k-means clustering algorithm
+            Constructor of the k-means clustering algorithm
             :param args: the arguments to be sent to the sci-kit implementation
             :return: returns the Clustering object
         """
@@ -55,7 +99,7 @@ class Clustering:
     @classmethod
     def affinity_propagation(cls, *args):
         """
-            Wrapper method for the affinity propagation clustering algorithm
+            Constructor of the affinity propagation clustering algorithm
             :param args: the arguments to be sent to the sci-kit implementation
             :return: returns the Clustering object
         """
@@ -66,7 +110,7 @@ class Clustering:
     @classmethod
     def hierarchical(cls, *args):
         """
-            Wrapper method for the agglomerative clustering algorithm
+            Constructor of the agglomerative clustering algorithm
             :param args: the arguments to be sent to the sci-kit implementation
             :return: returns the Clustering object
         """
@@ -77,7 +121,7 @@ class Clustering:
     @classmethod
     def birch(cls, *args):
         """
-            Wrapper method for the birch clustering algorithm
+            Constructor of the birch clustering algorithm
             :param args: the arguments to be sent to the sci-kit implementation
             :return: returns the Clustering object
         """
@@ -88,7 +132,7 @@ class Clustering:
     @classmethod
     def dbscan(cls, *args):
         """
-            Wrapper method for the DBSCAN clustering algorithm
+            Constructor of the DBSCAN clustering algorithm
             :param args: the arguments to be sent to the sci-kit implementation
             :return: returns the Clustering object
         """
@@ -99,7 +143,7 @@ class Clustering:
     @classmethod
     def feature_agglomeration(cls, *args):
         """
-            Wrapper method for the feature agglomeration clustering algorithm
+            Constructor of the feature agglomeration clustering algorithm
             :param args: the arguments to be sent to the sci-kit implementation
             :return: returns the Clustering object
         """
@@ -110,7 +154,7 @@ class Clustering:
     @classmethod
     def mini_batch_kmeans(cls, *args):
         """
-            Wrapper method for the mini batch k-means clustering algorithm
+            Constructor of the mini batch k-means clustering algorithm
             :param args: the arguments to be sent to the sci-kit implementation
             :return: returns the Clustering object
         """
@@ -121,7 +165,7 @@ class Clustering:
     @classmethod
     def mean_shift(cls, *args):
         """
-            Wrapper method for the mean shift clustering algorithm
+            Constructor of the mean shift clustering algorithm
             :param args: the arguments to be sent to the sci-kit implementation
             :return: returns the Clustering object
         """
@@ -132,7 +176,7 @@ class Clustering:
     @classmethod
     def spectral_clustering(cls, *args):
         """
-            Wrapper method for the spectral clustering algorithm
+            Constructor of the spectral clustering algorithm
             :param args: the arguments to be sent to the sci-kit implementation
             :return: returns the Clustering object
         """
@@ -147,23 +191,22 @@ class Clustering:
         :param model: the clustering algorithm model
         :return: the truth value (Boolean)
         """
-        return any(isinstance(model, i) for i in [xmeans, clarans])
+        return any(isinstance(model, i) for i in [xmeans, clarans, rock, optics])
 
-    def fit(self, data):
+    def fit(self, data=None):
         """
         Performs clustering
         :param data: Data to be fit
-        :return: 
+        :return:
         """
         if self.is_pyclustering_instance(self.model):
-            if isinstance(data, pd.DataFrame):
-                data = data.values.tolist()
-            else:  # in case data is already in the matrix form
-                data = data.tolist()
             if isinstance(self.model, xmeans):
+                data = self.input_preprocess(data)
                 self.model._xmeans__pointer_data = data
             elif isinstance(self.model, clarans):
+                data = self.input_preprocess(data)
                 self.model._clarans__pointer_data = data
+
             self.model.process()
         else:
             self.model.fit(data)
@@ -178,7 +221,7 @@ class Clustering:
         labels = []
         for i in range(0, len(clusters)):
             for j in clusters[i]:
-                labels.insert(j, i)
+                labels.insert(int(j), i)
         return labels
 
     def retrieve_cluster(self, df, cluster_no):
@@ -212,7 +255,7 @@ class Clustering:
     def adjusted_mutual_info(self, reference_clusters):
         """
         Calculates the adjusted mutual information score w.r.t. the reference clusters (explicit evaluation)
-        :param reference_clusters: Clusters that are to be used as reference  
+        :param reference_clusters: Clusters that are to be used as reference
         :return: returns the value of the adjusted mutual information score
         """
         return adjusted_mutual_info_score(self.get_labels(self), self.get_labels(reference_clusters))
@@ -220,7 +263,7 @@ class Clustering:
     def adjusted_rand_score(self, reference_clusters):
         """
         Calculates the adjusted rand score w.r.t. the reference clusters (explicit evaluation)
-        :param reference_clusters: Clusters that are to be used as reference  
+        :param reference_clusters: Clusters that are to be used as reference
         :return: returns the value of the adjusted rand score
         """
         return adjusted_rand_score(self.get_labels(self), self.get_labels(reference_clusters))
@@ -236,7 +279,7 @@ class Clustering:
     def completeness_score(self, reference_clusters):
         """
         Calculates the completeness score w.r.t. the reference clusters (explicit evaluation)
-        :param reference_clusters: Clusters that are to be used as reference  
+        :param reference_clusters: Clusters that are to be used as reference
         :return: the resulting completeness score
         """
         return completeness_score(self.get_labels(self), self.get_labels(reference_clusters))
@@ -244,7 +287,7 @@ class Clustering:
     def fowlkes_mallows(self, reference_clusters):
         """
         Calculates the Fowlkes-Mallows index (FMI) w.r.t. the reference clusters (explicit evaluation)
-        :param reference_clusters: Clusters that are to be used as reference  
+        :param reference_clusters: Clusters that are to be used as reference
         :return: The resulting Fowlkes-Mallows score.
         """
         return fowlkes_mallows_score(self.get_labels(self), self.get_labels(reference_clusters))
@@ -252,7 +295,7 @@ class Clustering:
     def homogeneity_score(self, reference_clusters):
         """
         Calculates the homogeneity score w.r.t. the reference clusters (explicit evaluation)
-        :param reference_clusters: Clusters that are to be used as reference  
+        :param reference_clusters: Clusters that are to be used as reference
         :return: The resulting homogeneity score.
         """
         return homogeneity_score(self.get_labels(self), self.get_labels(reference_clusters))
@@ -260,7 +303,7 @@ class Clustering:
     def mutual_info_score(self, reference_clusters):
         """
         Calculates the MI (mutual information) w.r.t. the reference clusters (explicit evaluation)
-        :param reference_clusters: Clusters that are to be used as reference  
+        :param reference_clusters: Clusters that are to be used as reference
         :return: The resulting MI score.
         """
         return mutual_info_score(self.get_labels(self), self.get_labels(reference_clusters))
@@ -268,7 +311,7 @@ class Clustering:
     def normalized_mutual_info_score(self, reference_clusters):
         """
         Calculates the normalized mutual information w.r.t. the reference clusters (explicit evaluation)
-        :param reference_clusters: Clusters that are to be used as reference  
+        :param reference_clusters: Clusters that are to be used as reference
         :return: The resulting normalized mutual information score.
         """
         return normalized_mutual_info_score(self.get_labels(self), self.get_labels(reference_clusters))
