@@ -9,6 +9,9 @@ from pyclustering.cluster.xmeans import xmeans, splitting_type
 from pyclustering.cluster.clarans import clarans
 from pyclustering.cluster.rock import rock
 from pyclustering.cluster.optics import optics
+import numpy as np
+from scipy.spatial.distance import cdist, pdist
+from matplotlib import pyplot as plt
 
 import pandas as pd
 import numpy as np
@@ -197,7 +200,7 @@ class Clustering:
         """
         Performs clustering
         :param data: Data to be fit
-        :return:
+        :return: the clustering object
         """
         if self.is_pyclustering_instance(self.model):
             if isinstance(self.model, xmeans):
@@ -210,6 +213,7 @@ class Clustering:
             self.model.process()
         else:
             self.model.fit(data)
+            return self
 
     @property
     def _labels_from_pyclusters(self):
@@ -251,6 +255,79 @@ class Clustering:
             return obj._labels_from_pyclusters
         else:
             return obj.model.labels_
+
+    @staticmethod
+    def silhouette_n_clusters(data, k_min, k_max, distance='euclidean'):
+        """
+        Computes and plot the silhouette score vs number of clusters graph to help selecting the number of clusters visually
+        :param data: The data object
+        :param k_min: lowerbound of the cluster range
+        :param k_max: upperbound of the cluster range
+        :param distance: the distance metric, 'euclidean' by default
+        :return:
+        """
+        k_range = range(k_min, k_max)
+
+        k_means_var = [Clustering.kmeans(k).fit(data) for k in k_range]
+
+        silhouette_scores = [obj.silhouette_score(data=data, metric=distance) for obj in k_means_var]
+
+        # elbow curve
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.plot(k_range, silhouette_scores, 'b*-')
+        ax.set_ylim((-1, 1))
+        plt.grid(True)
+        plt.xlabel('n_clusters')
+        plt.ylabel('The silhouette score')
+        plt.title('Silhouette score vs. k')
+        plt.show()
+
+
+    @staticmethod
+    def elbow_method(data, k_min, k_max, distance='euclidean'):
+        """
+        Calculates and plots the plot of variance explained - number of clusters
+        Implementation reference: https://github.com/sarguido/k-means-clustering
+        :param data: The dataset
+        :param k_min: lowerbound of the cluster range
+        :param k_max: upperbound of the cluster range
+        :param distance: the distance metric, 'euclidean' by default
+        :return:
+        """
+        # Determine your k range
+        k_range = range(k_min, k_max)
+
+        # Fit the kmeans model for each n_clusters = k
+        k_means_var = [Clustering.kmeans(k).fit(data) for k in k_range]
+
+        # Pull out the cluster centers for each model
+        centroids = [X.model.cluster_centers_ for X in k_means_var]
+
+        # Calculate the Euclidean distance from
+        # each point to each cluster center
+        k_euclid = [cdist(data, cent, distance) for cent in centroids]
+        dist = [np.min(ke, axis=1) for ke in k_euclid]
+
+        # Total within-cluster sum of squares
+        wcss = [sum(d ** 2) for d in dist]
+
+        # The total sum of squares
+        tss = sum(pdist(data) ** 2) / data.shape[0]
+
+        # The between-cluster sum of squares
+        bss = tss - wcss
+
+        # elbow curve
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.plot(k_range, bss / tss * 100, 'b*-')
+        ax.set_ylim((0, 100))
+        plt.grid(True)
+        plt.xlabel('n_clusters')
+        plt.ylabel('Percentage of variance explained')
+        plt.title('Variance Explained vs. k')
+        plt.show()
 
     def adjusted_mutual_info(self, reference_clusters):
         """
