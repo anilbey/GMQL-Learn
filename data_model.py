@@ -8,6 +8,7 @@ from ml.clustering import Clustering
 from ml.biclustering import Biclustering
 from tqdm import tqdm
 from wordcloud import WordCloud
+import logging
 
 class DataModel:
     """
@@ -233,19 +234,35 @@ class DataModel:
         term_document_df = df.T
         return term_document_df
 
-    def tf(self, cluster):
+    @staticmethod
+    def tf(cluster):
         """
         Computes the term frequency and stores it as a dictionary
         :param cluster: the cluster that contains the metadata
         :return: tf dictionary
         """
         counts = dict()
-        lines = cluster.split('\n')
-        for line in lines:
-            counts[line] = counts.get(line, 0) + 1
+        words = cluster.split(' ')
+        for word in words:
+            counts[word] = counts.get(word, 0) + 1
         return counts
 
-    def best_descriptive_meta_dict(self, path_to_bag_of_genomes, cluster_no, preprocess=True):
+    @staticmethod
+    def validate_uuid(str):
+        """
+        Returns true if the string is a UUID code
+        :param str: input string
+        :return: the truth value
+        """
+        from uuid import UUID
+        try:
+            UUID(str)
+            return True
+        except:
+            return False
+
+    @staticmethod
+    def best_descriptive_meta_dict(path_to_bag_of_genomes, cluster_no):
         """
         Computes the importance of each metadata by using tf * coverage (the percentage of the term occuring in a cluster)
         :param path_to_bag_of_genomes: The directory path
@@ -253,47 +270,68 @@ class DataModel:
         :param preprocess: to remove the redundant information from the metadata
         :return: returns the computed dictionary
         """
+        from nltk.corpus import stopwords
         clusters = []
         for file in Parser._get_files('.bag_of_genome', path_to_bag_of_genomes):
             f = open(file, 'r')
             text = f.read()
-            clusters.append(text)
+            # process the text
+            word_list = []
+            for line in text.split('\n'):
+                try:
+                    # take the right hand side of the = character
+                    rhs = line.split('=')[1]
+                    # omit the numbers
+
+                    if not (len(rhs) < 3 or rhs[0].isdigit() or any([x in rhs for x in ['.','//','tcga']]) or DataModel.validate_uuid(rhs)):
+                        word_list.append(rhs)
+                except Exception as e:
+                    #  logging.exception(e)
+                    pass
+
+            english_stopwords = stopwords.words('english')
+            genomic_stopwords = ['tcga']
+            extra_stopwords = ['yes','no', 'normal', 'low', 'high']
+            all_stopwords = english_stopwords + genomic_stopwords + extra_stopwords
+            filtered_words = [word for word in word_list if word not in all_stopwords]
+
+            new_text = ""
+            for word in filtered_words:
+                new_text += word
+                new_text += ' '
+            clusters.append(new_text)
 
         all_clusters = ""
         for c in clusters:
             all_clusters += c
 
-        all_clusters_tf = self.tf(all_clusters)
-        result_dict = dict()
-        cluster_dict = self.tf(clusters[cluster_no])
+        all_clusters_tf = DataModel.tf(all_clusters)
+
+        cluster_dict = DataModel.tf(clusters[cluster_no])
         for key, value in cluster_dict.items():
             new_val = cluster_dict[key] * (cluster_dict[key] / all_clusters_tf[key])
-            if preprocess:
-                try:
-                    new_key = key.split('__')[1]
-                except:
-                    new_key = key
-                result_dict[new_key] = new_val
-            else:
-                 cluster_dict[key] = new_val
-
-        if preprocess:
-            return result_dict
-        else:
+            cluster_dict[key] = new_val
             return cluster_dict
 
 
     @staticmethod
-    def visualize_cloud_of_words(dictionary):
+    def visualize_cloud_of_words(dictionary, image_path=None):
+        """
+        Renders the cloud of words representation for a given dictionary of frequencies
+        :param dictionary: the dictionary object that contains key-frequency pairs
+        :param image_path: the path to the image mask, None if no masking is needed
+        :return:
+        """
+        from PIL import Image
 
-        """
-        Draws the cloud of words
-        :param dictionary: Dictionary of values
-        :return: None
-        """
-        # Generate a word cloud image
-        wc = WordCloud(width=800, height=600)
-        wc = wc.generate_from_frequencies(dictionary)
+        if image_path is not None:
+            mask = np.array(Image.open(image_path))
+            wc = WordCloud(mask=mask, background_color='white', width=1600, height=1200, prefer_horizontal=0.8)
+            wc = wc.generate_from_frequencies(dictionary)
+        else:
+            # Generate a word cloud image
+            wc = WordCloud(background_color='white', width=1600, height=1200, prefer_horizontal=0.8)
+            wc = wc.generate_from_frequencies(dictionary)
 
         # Display the generated image:
         # the matplotlib way:
@@ -302,3 +340,16 @@ class DataModel:
         plt.imshow(wc, interpolation='bilinear')
         plt.axis("off")
         plt.show()
+
+    @staticmethod
+    def cloud_of_words(path_to_bog, cluster_no, image_path=None):
+        """
+        Draws the cloud of words representation
+        :param path_to_bog: path to bag of words
+        :param cluster_no: the number of document to be visualized
+        :param image_path: path to the image file for the masking, None if no masking is needed
+        :return:
+        """
+        dictionary = DataModel.best_descriptive_meta_dict(path_to_bog, cluster_no)
+        DataModel.visualize_cloud_of_words(dictionary, image_path)
+
