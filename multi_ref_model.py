@@ -1,13 +1,13 @@
-from data_model import DataModel
+from genometric_space import GenometricSpace
 from parser.parser import Parser
 import pandas as pd
 import warnings
 import numpy as np
 
 
-class MultiDataModel:
+class MultiRefModel:
     """
-    Derived DataModel class to represent data that are mapped with multiple references
+    GenometricSpace class to represent data that are mapped with multiple references
     
     """
 
@@ -40,7 +40,8 @@ class MultiDataModel:
                           "To load all the data please set the full_load parameter equal to True.")
         p = Parser(path)
         all_meta_data = p.parse_meta(meta)
-        all_data = p.parse_data(regs,values, full_load)
+        all_data = p.parse_data(regs, values, full_load)
+
         all_data = pd.pivot_table(all_data,
                                    values=values, columns=regs, index=['sample'],
                                    fill_value=0)
@@ -50,7 +51,7 @@ class MultiDataModel:
             series = all_meta_data[genes_uuid] == g
             m = (all_meta_data[series])
             d = (all_data.loc[series]).dropna(axis=1, how='all')  # not to show the NaN data
-            self.data_model.append(DataModel.from_memory(d, m))
+            self.data_model.append(GenometricSpace.from_memory(d, m))
             self.all_meta_data = all_meta_data
 
     def merge(self, samples_uuid):

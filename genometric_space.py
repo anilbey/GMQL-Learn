@@ -10,7 +10,7 @@ from tqdm import tqdm
 from wordcloud import WordCloud
 import logging
 
-class DataModel:
+class GenometricSpace:
     """
     The Data Model for the manipulation of GDM data
     """
@@ -27,11 +27,11 @@ class DataModel:
     @classmethod
     def from_memory(cls, data, meta):
         """
-        Overloaded constructor to create the DataModel object from memory data and meta variables.
+        Overloaded constructor to create the GenometricSpace object from memory data and meta variables.
         Args:
             :param data: The data model
             :param meta: The metadata
-            :return: A DataModel object
+            :return: A GenometricSpace object
         """
 
         obj = cls()
@@ -264,7 +264,7 @@ class DataModel:
                     rhs = line.split('=')[1]
                     # omit the numbers
 
-                    if not (len(rhs) < 3 or rhs[0].isdigit() or any([x in rhs for x in ['.','//','tcga']]) or DataModel.validate_uuid(rhs)):
+                    if not (len(rhs) < 3 or rhs[0].isdigit() or any([x in rhs for x in ['.','//','tcga']]) or GenometricSpace.validate_uuid(rhs)):
                         word_list.append(rhs)
                 except Exception as e:
                     #  logging.exception(e)
@@ -286,14 +286,13 @@ class DataModel:
         for c in clusters:
             all_clusters += c
 
-        all_clusters_tf = DataModel.tf(all_clusters)
+        all_clusters_tf = GenometricSpace.tf(all_clusters)
 
-        cluster_dict = DataModel.tf(clusters[cluster_no])
+        cluster_dict = GenometricSpace.tf(clusters[cluster_no])
         for key, value in cluster_dict.items():
             new_val = cluster_dict[key] * (cluster_dict[key] / all_clusters_tf[key])
             cluster_dict[key] = new_val
             return cluster_dict
-
 
     @staticmethod
     def visualize_cloud_of_words(dictionary, image_path=None):
@@ -331,6 +330,6 @@ class DataModel:
         :param image_path: path to the image file for the masking, None if no masking is needed
         :return:
         """
-        dictionary = DataModel.best_descriptive_meta_dict(path_to_bog, cluster_no)
-        DataModel.visualize_cloud_of_words(dictionary, image_path)
+        dictionary = GenometricSpace.best_descriptive_meta_dict(path_to_bog, cluster_no)
+        GenometricSpace.visualize_cloud_of_words(dictionary, image_path)
 
